@@ -1,12 +1,22 @@
 ﻿using System;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SistemskoProgramiranje3
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main()
         {
-            Console.WriteLine("I love u pookie!");
+            IssueService issueService = new IssueService();
+
+            var issues = await issueService.GetIssuesAsync();
+
+            foreach (var issue in issues)
+            {
+                Console.WriteLine(issue);
+            }
         }
     }
 }
