@@ -9,13 +9,15 @@ namespace SistemskoProgramiranje3
     public class GithubIssue
     {
         public long Id { get; set;}
+
+        public required int Broj { get; set;}
         public required string Title { get; set;}
         public required string Body { get; set;}
         public required string User { get; set;}
 
         public override string ToString() 
         {
-            return $"ID: {Id}\nAutor: {User}\n{Title}\n{Body}";
+            return $"Broj: {Broj}\nAutor: {User}\n{Title}\n{Body}";
         }
     }
 }

@@ -10,18 +10,19 @@ namespace SistemskoProgramiranje3
     {
         public static async Task Main()
         {
-            var issueStream = new IssueStream();
 
-            var observerDime = new IssueObserver("Gledam dime");
-            var observerDunja = new IssueObserver("Gledam dunju");
+            var commentStream = new IssueCommentStream();
 
-            var filtriranoDime = issueStream.Where(i => i.User == "M1tri");
-            var filtriranoDunja = issueStream.Where(i => i.User == "dunjajovic");
+            var observerDime = new IssueCommentObserver("Gledam dime");
+            var observerDunja = new IssueCommentObserver("Gledam dunja");
+
+            var filtriranoDime = commentStream.Where(c => c.Author == "M1tri");
+            var filtriranoDunja = commentStream.Where(c => c.Author == "dunjajovic");
 
             var subscriber1 = filtriranoDime.Subscribe(observerDime);
             var subscriber2 = filtriranoDunja.Subscribe(observerDunja);
 
-            await issueStream.GetIssuesAsync();
+            await commentStream.GetCommentsAsync();
 
             Console.ReadLine();
         }
