@@ -10,8 +10,11 @@ namespace SistemskoProgramiranje3
     {
         public static async Task Main()
         {
+            await ModelTrainer.PrikupiPodatke();
 
-            var commentStream = new IssueCommentStream();
+            return;
+
+            var commentStream = new IssueCommentStream("M1tri", "SistemskoProgramiranje3");
 
             var observerDime = new IssueCommentObserver("Gledam dime");
             var observerDunja = new IssueCommentObserver("Gledam dunja");

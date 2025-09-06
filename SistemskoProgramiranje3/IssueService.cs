@@ -13,7 +13,10 @@ namespace SistemskoProgramiranje3
     {
         private readonly HttpClient httpClient = new HttpClient();
 
-        public IssueService()
+        public string Owner { get; set; }
+        public string Repo { get; set; }
+
+        public IssueService(string owner, string repo)
         {
             try
             {
@@ -27,14 +30,14 @@ namespace SistemskoProgramiranje3
             {
                 Console.WriteLine(ex);
             }
+
+            Owner = owner;
+            Repo = repo;
         }
 
         public async Task<IEnumerable<GithubIssue>> GetIssuesAsync()
         {
-            var owner = "M1tri";
-            var repo = "SistemskoProgramiranje3";
-
-            var zahtev = $"https://api.github.com/repos/{owner}/{repo}/issues";
+            var zahtev = $"https://api.github.com/repos/{Owner}/{Repo}/issues";
 
             var response = await httpClient.GetAsync(zahtev);
 

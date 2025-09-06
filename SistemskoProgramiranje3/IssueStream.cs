@@ -12,9 +12,14 @@ namespace SistemskoProgramiranje3
     public class IssueStream : IObservable<GithubIssue>
     {
         private readonly Subject<GithubIssue> issueSubject = new Subject<GithubIssue>();
-        private readonly IssueService issueService = new IssueService();
+        private readonly IssueService issueService;
+        public IssueStream(string owner, string repo)
+        {
+            issueService = new IssueService(owner, repo);
+        }
 
-        public async Task GetIssuesAsync()
+
+        public async Task<IEnumerable<GithubIssue>> GetIssuesAsync()
         {
             try
             {
@@ -24,10 +29,13 @@ namespace SistemskoProgramiranje3
                     issueSubject.OnNext(issue);
                 }
                 issueSubject.OnCompleted();
+
+                return issues;
             }
             catch (Exception ex) 
             {
                 Console.WriteLine(ex);
+                return Enumerable.Empty<GithubIssue>();
             }
         }
 

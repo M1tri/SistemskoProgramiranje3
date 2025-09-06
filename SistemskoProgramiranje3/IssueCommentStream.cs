@@ -12,14 +12,43 @@ namespace SistemskoProgramiranje3
     public class IssueCommentStream : IObservable<GithubIssueComment>
     {
         private readonly Subject<GithubIssueComment> commentSubject = new Subject<GithubIssueComment>();
-        private readonly IssueCommentService issueCommentService = new IssueCommentService();
-        private readonly IssueService issueService = new IssueService();
+        private readonly IssueCommentService issueCommentService;
+        private readonly IssueService issueService;
 
-        public async Task GetCommentsAsync()
+        private TaskCompletionSource<bool> prikupljeno = new TaskCompletionSource<bool>();
+
+        public string Owner {
+            get => issueCommentService.Owner;
+            set { 
+                issueCommentService.Owner = value;
+                issueService.Owner = value;
+            }
+        }
+
+        public string Repo
+        {
+            get => issueCommentService.Repo;
+            set
+            {
+                issueCommentService.Repo = value;
+                issueService.Repo = value;
+            }
+        }
+
+        public IssueCommentStream(string owner, string repo)
+        {
+            this.issueCommentService = new IssueCommentService(owner, repo);
+            this.issueService = new IssueService(owner, repo);
+        }
+
+        public async Task GetCommentsAsync(IEnumerable<GithubIssue>? issues = null)
         {
             try
             {
-                var issues = await issueService.GetIssuesAsync();
+                if (issues == null)
+                {
+                    issues = await issueService.GetIssuesAsync();
+                }
 
                 // Za svaki issue pribavljamo komentari na background niti
                 issues
@@ -35,7 +64,12 @@ namespace SistemskoProgramiranje3
                             commentSubject.OnNext(comment);
                             },
                         ex => commentSubject.OnError(ex),
-                        () => commentSubject.OnCompleted());
+                        () => {
+                            commentSubject.OnCompleted();
+                            prikupljeno.SetResult(true);
+                        });
+
+                await prikupljeno.Task;
 
                 /*
                 foreach (var issue in issues)

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -11,7 +12,12 @@ namespace SistemskoProgramiranje3
     public class IssueCommentService
     {
         private readonly HttpClient httpClient = new HttpClient();
-        public IssueCommentService() 
+
+        public string Owner { get; set; }
+        public string Repo { get; set; }
+
+
+        public IssueCommentService(string owner, string repo) 
         {
             try
             {
@@ -25,14 +31,14 @@ namespace SistemskoProgramiranje3
             {
                 Console.WriteLine(ex);
             }
+
+            Owner = owner;
+            Repo = repo;
         }
 
         public async Task<IEnumerable<GithubIssueComment>> GetCommentsAsync(int brojIssue)
         {
-            var owner = "M1tri";
-            var repo = "SistemskoProgramiranje3";
-
-            var zahtev = $"https://api.github.com/repos/{owner}/{repo}/issues/{brojIssue}/comments";
+            var zahtev = $"https://api.github.com/repos/{Owner}/{Repo}/issues/{brojIssue}/comments";
 
             var respone = await httpClient.GetAsync(zahtev);
 
@@ -51,6 +57,7 @@ namespace SistemskoProgramiranje3
                 GithubIssueComment comment = new GithubIssueComment
                 {
                     Id = (long)item["id"],
+                    IssueBroj = brojIssue,
                     Body = (string)item["body"],
                     Author = (string)item["user"]["login"],
                 };
