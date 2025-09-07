@@ -20,7 +20,7 @@ namespace SistemskoProgramiranje3
         {
             try
             {
-                var token = File.ReadAllText("token.txt"); // ovo se ne cuva na repozitorijumu
+                var token = File.ReadAllText("../../token.txt"); // ovo se ne cuva na repozitorijumu
 
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Projekat3");
 

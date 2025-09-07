@@ -50,7 +50,6 @@ namespace SistemskoProgramiranje3
                     issues = await issueService.GetIssuesAsync();
                 }
 
-                // Za svaki issue pribavljamo komentari na background niti
                 issues
                     .ToObservable()
                     .SelectMany(issue =>

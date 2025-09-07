@@ -14,18 +14,7 @@ namespace SistemskoProgramiranje3
         private List<int> brojevi;
         StringWriter data;
 
-        public static readonly HashSet<string> stopWords = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "a", "an", "the", "and", "or", "but", "if", "in", "on", "with",
-            "is", "are", "was", "were", "be", "been", "to", "from", "of",
-            "for", "by", "at", "this", "that", "these", "those",
-            "have", "has", "had", "do", "does", "did",
-            "can", "could", "should", "would", "will", "just",
-            "i", "you", "he", "she", "it", "we", "they",
-            "me", "my", "your", "our", "their",
-            "here", "there", "then", "when", "where", "why", "how",
-            "issue", "github", "repo", "comment", "thanks", "please", "###"
-        };
+        public readonly HashSet<string> stopWords;
 
         public IssueDataCollector(string ime, string tema)
         {
@@ -33,6 +22,22 @@ namespace SistemskoProgramiranje3
             this.tema = tema;
             brojevi = new List<int>();
             data = new StringWriter();
+
+            StreamReader st = new StreamReader("../../stop_words.txt");
+            List<string> stopWords = new List<string>(60);
+
+            while (!st.EndOfStream)
+            {
+                var line = st.ReadLine();
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    foreach (var word in words)
+                        stopWords.Add(word);
+                }
+            }
+
+            this.stopWords = new HashSet<string>(stopWords, StringComparer.OrdinalIgnoreCase);
         }
 
         public void OnNext(GithubIssue issue)

@@ -25,7 +25,8 @@ namespace SistemskoProgramiranje3
               {"microsoft", "vscode"},
               {"jonbarrow", "trainercards.studio"},
               {"dubinc", "dub"},
-              {"vishalmaurya850", "Product-Ledger"}
+              {"vishalmaurya850", "Product-Ledger"},
+              {"flarialmc", "dll" }
         };
 
 
