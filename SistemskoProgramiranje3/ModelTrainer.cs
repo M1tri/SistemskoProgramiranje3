@@ -37,17 +37,27 @@ namespace SistemskoProgramiranje3
 
             var trener = new GisTrainer();
 
-            StreamReader stream = new StreamReader("trainingData.txt");
-            var dataReader = new PlainTextByLineDataReader(stream);
-            BasicEventReader reader = new BasicEventReader(dataReader);
+            try
+            {
+                StreamReader stream = new StreamReader("trainingData.txt");
+                var dataReader = new PlainTextByLineDataReader(stream);
+                BasicEventReader reader = new BasicEventReader(dataReader);
 
-            trener.TrainModel(reader);
+                trener.TrainModel(reader);
 
-            PlainTextGisModelWriter modelWriter = new PlainTextGisModelWriter();
-            StreamWriter modelStream = new StreamWriter(File.Open("model.txt", FileMode.Create));
-            GisModel model = new GisModel(trener);
-            modelWriter.Persist(model, modelStream);
-            modelStream.Close();
+                stream.Close();
+
+                PlainTextGisModelWriter modelWriter = new PlainTextGisModelWriter();
+                StreamWriter modelStream = new StreamWriter(File.Open("model.txt", FileMode.Create));
+                GisModel model = new GisModel(trener);
+                modelWriter.Persist(model, modelStream);
+
+                modelStream.Close();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private static async Task PrikupiPodatke()
@@ -80,9 +90,6 @@ namespace SistemskoProgramiranje3
 
                 var issues = await issueStream.GetIssuesAsync();
 
-                dataFile.Write(bugCollector.GetData());
-                dataFile.Write(featureCollector.GetData());
-
                 IssueCommentStream issueCommentStream = new IssueCommentStream(repo.Key, repo.Value);
 
                 var featureCommentStream = issueCommentStream.Where(c => featureCollector.GetBrojevi().Contains(c.IssueBroj));
@@ -96,8 +103,18 @@ namespace SistemskoProgramiranje3
 
                 await issueCommentStream.GetCommentsAsync(issues);
 
-                dataFile.Write(bugCommentCollector.GetData());
-                dataFile.Write(featureCommentCollector.GetData());
+                try
+                {
+                    dataFile.Write(bugCollector.GetData());
+                    dataFile.Write(featureCollector.GetData());
+
+                    dataFile.Write(bugCommentCollector.GetData());
+                    dataFile.Write(featureCommentCollector.GetData());
+                }
+                catch(IOException e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
             }
 
             dataFile.Close();

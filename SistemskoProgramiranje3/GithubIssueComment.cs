@@ -15,7 +15,7 @@ namespace SistemskoProgramiranje3
 
         public override string ToString()
         {
-            return $"{Id}\n{Author}\n{Body}\n";
+            return $"Issue broj: {IssueBroj}\nAutor: {Author}\nKomentar: {Body}";
         }
     }
 }

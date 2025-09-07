@@ -18,18 +18,27 @@ namespace SistemskoProgramiranje3
             this.ime = ime;
             this.model = model;
 
-            StreamReader st = new StreamReader("../../stop_words.txt");
             List<string> stopWords = new List<string>();
-
-            while (!st.EndOfStream)
+            try
             {
-                var line = st.ReadLine();
-                if (!string.IsNullOrWhiteSpace(line))
+                StreamReader st = new StreamReader("../../stop_words.txt");
+
+                while (!st.EndOfStream)
                 {
-                    var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    foreach (var word in words)
-                        stopWords.Add(word);
+                    var line = st.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        foreach (var word in words)
+                            stopWords.Add(word);
+                    }
                 }
+
+                st.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
             this.stopWords = new HashSet<string>(stopWords, StringComparer.OrdinalIgnoreCase);
@@ -37,7 +46,7 @@ namespace SistemskoProgramiranje3
 
         public void OnCompleted()
         {
-            Console.WriteLine($"Ja sam {ime} i sve je stiglo uspesno");
+            Console.WriteLine($"Ja sam observer {ime} i sve je stiglo uspesno");
         }
 
         public void OnError(Exception error)
@@ -58,9 +67,10 @@ namespace SistemskoProgramiranje3
 
             string tema = model.GetOutcomeName(maxIndex);
 
-            Console.WriteLine($"Ja sam {ime}"); 
-            Console.WriteLine($"i stiglo mi je {value}");
+            Console.WriteLine($"Ja sam observer {ime}. Stiglo mi je:"); 
+            Console.WriteLine($"{value}");
             Console.WriteLine($"Tema ovog komentara je {tema}");
+            Console.WriteLine("-------------------------------");
         }
     }
 }

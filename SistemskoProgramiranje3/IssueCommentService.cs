@@ -56,10 +56,10 @@ namespace SistemskoProgramiranje3
             {
                 GithubIssueComment comment = new GithubIssueComment
                 {
-                    Id = (long)item["id"],
+                    Id = (long)item["id"]!,
                     IssueBroj = brojIssue,
-                    Body = (string)item["body"],
-                    Author = (string)item["user"]["login"],
+                    Body = (string)item["body"]!,
+                    Author = (string)item["user"]!["login"]!,
                 };
 
                 comments.Add(comment);  

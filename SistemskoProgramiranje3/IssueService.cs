@@ -55,11 +55,11 @@ namespace SistemskoProgramiranje3
             {
                 GithubIssue issue = new GithubIssue
                 {
-                    Id = (long)element["id"],
-                    Broj = (int)element["number"],
-                    Title = (string)element["title"],
-                    Body = (string)element["body"],
-                    User = (string)element["user"]["login"]
+                    Id = (long)element["id"]!,
+                    Broj = (int)element["number"]!,
+                    Title = (string)element["title"]!,
+                    Body = (string)element["body"]!,
+                    User = (string)element["user"]!["login"]!
                 };
 
                 issues.Add(issue);

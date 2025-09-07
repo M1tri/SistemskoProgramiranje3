@@ -18,7 +18,6 @@ namespace SistemskoProgramiranje3
             issueService = new IssueService(owner, repo);
         }
 
-
         public async Task<IEnumerable<GithubIssue>> GetIssuesAsync()
         {
             try

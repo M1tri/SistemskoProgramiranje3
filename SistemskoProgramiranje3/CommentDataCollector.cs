@@ -21,18 +21,27 @@ namespace SistemskoProgramiranje3
             data = new StringWriter();
             this.tema = tema;
 
-            StreamReader st = new StreamReader("../../stop_words.txt");
             List<string> stopWords = new List<string>(50);
-
-            while (!st.EndOfStream)
+            try
             {
-                var line = st.ReadLine();
-                if (!string.IsNullOrWhiteSpace(line))
+                StreamReader st = new StreamReader("../../stop_words.txt");
+
+                while (!st.EndOfStream)
                 {
-                    var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    foreach (var word in words)
-                        stopWords.Add(word);
+                    var line = st.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        foreach (var word in words)
+                            stopWords.Add(word);
+                    }
                 }
+
+                st.Close();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
 
             this.stopWords = new HashSet<string>(stopWords, StringComparer.OrdinalIgnoreCase);

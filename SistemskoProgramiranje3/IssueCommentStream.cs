@@ -59,7 +59,7 @@ namespace SistemskoProgramiranje3
                     )
                     .Subscribe(
                         comment => {
-                            Console.WriteLine($"Iz niti: (Thread {System.Threading.Thread.CurrentThread.ManagedThreadId}): {comment.IssueBroj}");
+                            Console.WriteLine($"Iz niti: (Thread {System.Threading.Thread.CurrentThread.ManagedThreadId}): Issue {comment.IssueBroj}");
                             commentSubject.OnNext(comment);
                             },
                         ex => commentSubject.OnError(ex),
@@ -69,26 +69,12 @@ namespace SistemskoProgramiranje3
                         });
 
                 await prikupljeno.Task;
-
-                /*
-                foreach (var issue in issues)
-                {
-                    var comments = await issueCommentService.GetCommentsAsync(issue.Broj); // ovo u niti nekada TODO
-
-                    foreach (var comment in comments)
-                    {
-                        commentSubject.OnNext(comment);
-                    }
-                    commentSubject.OnCompleted();
-                }
-                */
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
-
 
         public IDisposable Subscribe(IObserver<GithubIssueComment> observer)
         {
