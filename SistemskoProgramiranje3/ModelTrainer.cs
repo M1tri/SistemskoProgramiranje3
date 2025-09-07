@@ -29,6 +29,7 @@ namespace SistemskoProgramiranje3
               {"flarialmc", "dll" }
         };
 
+        private static readonly object lock_obj = new object();
 
         public static async Task TrenirajModel()
         {
@@ -74,50 +75,67 @@ namespace SistemskoProgramiranje3
                 return;
             }
 
+            List<Task> tasks = new List<Task>();
             foreach (var repo in Repozitorijumi)
             {
-                IssueDataCollector bugCollector = new IssueDataCollector("BugCollector", "bug");
-                IssueDataCollector featureCollector = new IssueDataCollector("FeatureCollector", "feature");
+                Tuple<string, string, StreamWriter> state = new(repo.Key, repo.Value, dataFile);
+                tasks.Add(PrikupiPodatkeNit(state));
+            }
 
-                IssueStream issueStream = new IssueStream(repo.Key, repo.Value);
-
-                var bugStream = issueStream.Where(i => i.Title.Contains("bug", StringComparison.OrdinalIgnoreCase));
-                var featureStream = issueStream.Where(i => i.Title.Contains("feature", StringComparison.OrdinalIgnoreCase)     ||
-                                                           i.Title.Contains("enhancement", StringComparison.OrdinalIgnoreCase) ||
-                                                           i.Title.Contains("improvement", StringComparison.OrdinalIgnoreCase));
-                bugStream.Subscribe(bugCollector);
-                featureStream.Subscribe(featureCollector);
-
-                var issues = await issueStream.GetIssuesAsync();
-
-                IssueCommentStream issueCommentStream = new IssueCommentStream(repo.Key, repo.Value);
-
-                var featureCommentStream = issueCommentStream.Where(c => featureCollector.GetBrojevi().Contains(c.IssueBroj));
-                var bugCommentStream = issueCommentStream.Where(c => bugCollector.GetBrojevi().Contains(c.IssueBroj));
-
-                CommentDataCollector bugCommentCollector = new CommentDataCollector("BugCommentCollector", "bug");
-                CommentDataCollector featureCommentCollector = new CommentDataCollector("FeatureCommentCollector", "feature");
-
-                featureCommentStream.Subscribe(featureCommentCollector);
-                bugCommentStream.Subscribe(bugCommentCollector);
-
-                await issueCommentStream.GetCommentsAsync(issues);
-
-                try
-                {
-                    dataFile.Write(bugCollector.GetData());
-                    dataFile.Write(featureCollector.GetData());
-
-                    dataFile.Write(bugCommentCollector.GetData());
-                    dataFile.Write(featureCommentCollector.GetData());
-                }
-                catch(IOException e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+            foreach(var t in tasks)
+            {
+                await t;
             }
 
             dataFile.Close();
+        }
+
+        private static async Task PrikupiPodatkeNit(object? state)
+        {
+            var (owner,repo,file) = ((Tuple<string, string, StreamWriter>)state!);
+
+            IssueDataCollector bugCollector = new IssueDataCollector("BugCollector", "bug");
+            IssueDataCollector featureCollector = new IssueDataCollector("FeatureCollector", "feature");
+
+            IssueStream issueStream = new IssueStream(owner, repo);
+
+            var bugStream = issueStream.Where(i => i.Title.Contains("bug", StringComparison.OrdinalIgnoreCase));
+            var featureStream = issueStream.Where(i => i.Title.Contains("feature", StringComparison.OrdinalIgnoreCase) ||
+                                                       i.Title.Contains("enhancement", StringComparison.OrdinalIgnoreCase) ||
+                                                       i.Title.Contains("improvement", StringComparison.OrdinalIgnoreCase));
+            bugStream.Subscribe(bugCollector);
+            featureStream.Subscribe(featureCollector);
+
+            var issues = await issueStream.GetIssuesAsync();
+
+            IssueCommentStream issueCommentStream = new IssueCommentStream(owner, repo);
+
+            var featureCommentStream = issueCommentStream.Where(c => featureCollector.GetBrojevi().Contains(c.IssueBroj));
+            var bugCommentStream = issueCommentStream.Where(c => bugCollector.GetBrojevi().Contains(c.IssueBroj));
+
+            CommentDataCollector bugCommentCollector = new CommentDataCollector("BugCommentCollector", "bug");
+            CommentDataCollector featureCommentCollector = new CommentDataCollector("FeatureCommentCollector", "feature");
+
+            featureCommentStream.Subscribe(featureCommentCollector);
+            bugCommentStream.Subscribe(bugCommentCollector);
+
+            await issueCommentStream.GetCommentsAsync(issues);
+
+            try
+            {
+                lock (lock_obj)
+                {
+                    file.Write(bugCollector.GetData());
+                    file.Write(featureCollector.GetData());
+
+                    file.Write(bugCommentCollector.GetData());
+                    file.Write(featureCommentCollector.GetData());
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
     }
 }
