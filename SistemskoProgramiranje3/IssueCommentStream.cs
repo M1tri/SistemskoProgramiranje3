@@ -60,7 +60,7 @@ namespace SistemskoProgramiranje3
                     )
                     .Subscribe(
                         comment => {
-                            Console.WriteLine($"Iz niti: (Thread {System.Threading.Thread.CurrentThread.ManagedThreadId}): {comment.Body}");
+                            Console.WriteLine($"Iz niti: (Thread {System.Threading.Thread.CurrentThread.ManagedThreadId}): {comment.IssueBroj}");
                             commentSubject.OnNext(comment);
                             },
                         ex => commentSubject.OnError(ex),

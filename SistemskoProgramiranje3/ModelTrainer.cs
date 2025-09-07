@@ -1,9 +1,14 @@
-﻿using System;
+﻿using SharpEntropy;
+using SharpEntropy.IO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
+using System.IO;
+using File = System.IO.File;
 
 namespace SistemskoProgramiranje3
 {
@@ -17,18 +22,40 @@ namespace SistemskoProgramiranje3
               {"Muneerali199", "DocMagic"},
               {"cmintey", "wishlist"},
               {"opensource-society", "notesvault"},
-              {"microsoft", "vscode"}
+              {"microsoft", "vscode"},
+              {"jonbarrow", "trainercards.studio"},
+              {"dubinc", "dub"},
+              {"vishalmaurya850", "Product-Ledger"}
         };
 
-        public static async Task PrikupiPodatke()
+
+        public static async Task TrenirajModel()
         {
-            StreamWriter bugFile;
-            StreamWriter featureFile;
+            if (!File.Exists("trainingData.txt"))
+                await PrikupiPodatke();
+
+            var trener = new GisTrainer();
+
+            StreamReader stream = new StreamReader("trainingData.txt");
+            var dataReader = new PlainTextByLineDataReader(stream);
+            BasicEventReader reader = new BasicEventReader(dataReader);
+
+            trener.TrainModel(reader);
+
+            PlainTextGisModelWriter modelWriter = new PlainTextGisModelWriter();
+            StreamWriter modelStream = new StreamWriter(File.Open("model.txt", FileMode.Create));
+            GisModel model = new GisModel(trener);
+            modelWriter.Persist(model, modelStream);
+            modelStream.Close();
+        }
+
+        private static async Task PrikupiPodatke()
+        {
+            StreamWriter dataFile;
 
             try
             {
-                bugFile = new StreamWriter(File.Open("bugs.txt", FileMode.Create));
-                featureFile = new StreamWriter(File.Open("features.txt", FileMode.Create));
+                dataFile = new StreamWriter(File.Open("trainingData.txt", FileMode.Create));
             }
             catch (Exception ex)
             {
@@ -38,39 +65,41 @@ namespace SistemskoProgramiranje3
 
             foreach (var repo in Repozitorijumi)
             {
-                IssueDataCollector bugCollector = new IssueDataCollector("BugCollector", bugFile);
-                IssueDataCollector featureCollector = new IssueDataCollector("FeatureCollector", featureFile);
+                IssueDataCollector bugCollector = new IssueDataCollector("BugCollector", "bug");
+                IssueDataCollector featureCollector = new IssueDataCollector("FeatureCollector", "feature");
 
                 IssueStream issueStream = new IssueStream(repo.Key, repo.Value);
 
                 var bugStream = issueStream.Where(i => i.Title.Contains("bug", StringComparison.OrdinalIgnoreCase));
-                var featureStream = issueStream.Where(i => i.Title.Contains("feature", StringComparison.OrdinalIgnoreCase) ||
-                                                           i.Title.Contains("enhancement", StringComparison.OrdinalIgnoreCase));
-
+                var featureStream = issueStream.Where(i => i.Title.Contains("feature", StringComparison.OrdinalIgnoreCase)     ||
+                                                           i.Title.Contains("enhancement", StringComparison.OrdinalIgnoreCase) ||
+                                                           i.Title.Contains("improvement", StringComparison.OrdinalIgnoreCase));
                 bugStream.Subscribe(bugCollector);
                 featureStream.Subscribe(featureCollector);
 
                 var issues = await issueStream.GetIssuesAsync();
+
+                dataFile.Write(bugCollector.GetData());
+                dataFile.Write(featureCollector.GetData());
 
                 IssueCommentStream issueCommentStream = new IssueCommentStream(repo.Key, repo.Value);
 
                 var featureCommentStream = issueCommentStream.Where(c => featureCollector.GetBrojevi().Contains(c.IssueBroj));
                 var bugCommentStream = issueCommentStream.Where(c => bugCollector.GetBrojevi().Contains(c.IssueBroj));
 
-                CommentDataCollector bugCommentCollector = new CommentDataCollector("BugCommentCollector");
-                CommentDataCollector featureCommentCollector = new CommentDataCollector("FeatureCommentCollector");
+                CommentDataCollector bugCommentCollector = new CommentDataCollector("BugCommentCollector", "bug");
+                CommentDataCollector featureCommentCollector = new CommentDataCollector("FeatureCommentCollector", "feature");
 
                 featureCommentStream.Subscribe(featureCommentCollector);
                 bugCommentStream.Subscribe(bugCommentCollector);
 
                 await issueCommentStream.GetCommentsAsync(issues);
 
-                bugFile.WriteLine(bugCommentCollector.GetData());
-                featureFile.WriteLine(featureCommentCollector.GetData());
+                dataFile.Write(bugCommentCollector.GetData());
+                dataFile.Write(featureCommentCollector.GetData());
             }
 
-            bugFile.Close();
-            featureFile.Close();
+            dataFile.Close();
         }
     }
 }

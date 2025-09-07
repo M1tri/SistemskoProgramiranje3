@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using System.Reactive.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SharpEntropy;
+using SharpEntropy.IO;
 
 namespace SistemskoProgramiranje3
 {
@@ -10,7 +12,30 @@ namespace SistemskoProgramiranje3
     {
         public static async Task Main()
         {
-            await ModelTrainer.PrikupiPodatke();
+            if (!File.Exists("model.txt"))
+                await ModelTrainer.TrenirajModel();
+
+            StreamReader modelStream = new StreamReader("model.txt");
+            PlainTextGisModelReader modelReader = new PlainTextGisModelReader(modelStream);
+
+            GisModel model = new GisModel(modelReader);
+
+            string[] features1 = new string[] {"error", "crash"};
+            string[] features2 = new string[] { "request", "add"};
+
+            double[] outcome = model.Evaluate(features1);
+            int index = Array.IndexOf(outcome, outcome.Max());
+
+            string labela = model.GetOutcomeName(index);
+
+            Console.WriteLine(labela);
+
+            outcome = model.Evaluate(features2);
+            index = Array.IndexOf(outcome, outcome.Max());
+
+            labela = model.GetOutcomeName(index);
+
+            Console.WriteLine(labela);
 
             return;
 

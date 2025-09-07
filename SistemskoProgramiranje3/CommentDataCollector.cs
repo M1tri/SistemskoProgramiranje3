@@ -9,6 +9,7 @@ namespace SistemskoProgramiranje3
     class CommentDataCollector : IObserver<GithubIssueComment>
     {
         private readonly string ime;
+        private readonly string tema;
 
         StringWriter data;
 
@@ -25,10 +26,11 @@ namespace SistemskoProgramiranje3
             "issue", "github", "repo", "comment", "thanks", "please", "###"
         };
 
-        public CommentDataCollector(string ime)
+        public CommentDataCollector(string ime, string tema)
         {
             this.ime = ime;
             data = new StringWriter();
+            this.tema = tema;
         }
 
         public void OnCompleted()
@@ -43,16 +45,23 @@ namespace SistemskoProgramiranje3
 
         public void OnNext(GithubIssueComment value)
         {
-            Console.WriteLine($"Ja sam {ime} i stiglo mi je {value}");
+            Console.WriteLine($"Ja sam {ime} i obradjujem {value.IssueBroj} {value.Id}");
 
-            var text = value.Body.Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                     .Where(r => !stopWords.Contains(r));
+            var text = value.Body.Replace("\n", "")
+                                 .Replace("\r", "")
+                                 .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                 .Where(r => !stopWords.Contains(r));
 
+            if (text.Count() == 0)
+                return;
+
+            data.Write(" ");
             foreach (var word in text)
             {
-                data.Write(word);
+                data.Write(word.ToLower());
                 data.Write(" ");
             }
+            data.Write(this.tema);
             data.WriteLine();
         }
         public string GetData()
