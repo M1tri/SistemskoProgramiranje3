@@ -58,7 +58,7 @@ namespace SistemskoProgramiranje3
                     Id = (long)element["id"]!,
                     Broj = (int)element["number"]!,
                     Title = (string)element["title"]!,
-                    Body = (string)element["body"]!,
+                    Body = (string)element["body"] ?? "",
                     User = (string)element["user"]!["login"]!
                 };
 

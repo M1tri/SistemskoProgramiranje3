@@ -94,6 +94,8 @@ namespace SistemskoProgramiranje3
         {
             var (owner,repo,file) = ((Tuple<string, string, StreamWriter>)state!);
 
+            Console.WriteLine($"Prikupljanje podataka za {owner}/{repo}");
+
             IssueDataCollector bugCollector = new IssueDataCollector("BugCollector", "bug");
             IssueDataCollector featureCollector = new IssueDataCollector("FeatureCollector", "feature");
 
