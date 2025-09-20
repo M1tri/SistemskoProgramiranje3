@@ -58,7 +58,7 @@ namespace SistemskoProgramiranje3
                 {
                     Id = (long)item["id"]!,
                     IssueBroj = brojIssue,
-                    Body = (string)item["body"]!,
+                    Body = (string)item["body"] ?? "",
                     Author = (string)item["user"]!["login"]!,
                 };
 
