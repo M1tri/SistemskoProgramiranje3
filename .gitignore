@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 token.txt
-bugs.txt
-features.txt
+model.txt
+trainingData.txt
